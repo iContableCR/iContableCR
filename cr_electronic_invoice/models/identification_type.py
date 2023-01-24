@@ -3,6 +3,7 @@ from odoo import models, fields
 
 class IdentificationType(models.Model):
     _name = "identification.type"
+    _description = "Identification Type"
 
     # ==============================================================================================
     #                                          IDENTIFICATION TYPE

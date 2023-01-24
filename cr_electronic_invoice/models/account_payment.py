@@ -3,6 +3,7 @@ from odoo import models, fields
 
 class PaymentMethods(models.Model):
     _name = "payment.methods"
+    _description = "Payment Methods"
 
     # ==============================================================================================
     #                                          PAYMENT METHODS

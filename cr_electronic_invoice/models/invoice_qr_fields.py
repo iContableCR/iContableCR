@@ -4,6 +4,7 @@ from odoo import fields, models
 class InvoiceQrFields(models.Model):
     _name = 'invoice.qr.fields'
     _order = 'sequence'
+    _description = 'Invoice QR Fields'
 
     # ==============================================================================================
     #                                          INVOICE QR FIELD

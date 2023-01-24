@@ -3,6 +3,7 @@ from odoo import models, fields
 
 class AutEx(models.Model):
     _name = "aut.ex"
+    _description = "Aut Ex"
 
     # ==============================================================================================
     #                                          EXONERATIONS
