@@ -190,7 +190,7 @@ class AccountInvoiceElectronic(models.Model):
     # === Misc Information === #
 
     qr_image = fields.Binary(
-        string="QR Code",
+        string="QR Code Image",
         compute='_compute_qr_code'
     )
     partner_vat = fields.Char(
@@ -226,7 +226,7 @@ class AccountInvoiceElectronic(models.Model):
         default=False
         )
     error_count = fields.Integer(
-        string="Number of errors",
+        string="Number of errors#",
         default="0",
         copy=False
     )

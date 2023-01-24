@@ -46,7 +46,7 @@ class CompanyElectronic(models.Model):
     )
     date_expiration_sign = fields.Datetime(
         string="Due date",
-        default='1985-08-28 00:00:00'
+        default=fields.Datetime.now
     )
     range_days = fields.Integer(
         string='Days range',
@@ -254,6 +254,8 @@ class CompanyElectronic(models.Model):
         return new_comp_id
 
     def write(self, vals):
+        """ Try to automatically add the Comprobante Confirmation sequence to the company."""
+        
         if vals.get('date_expiration_sign') or vals.get('range_days'):
             cron = self.env.ref('cr_electronic_invoice.ir_cron_send_expiration_notice', False)
 
@@ -357,6 +359,7 @@ class CompanyElectronic(models.Model):
 
         return message
 
+    
     def get_expiration_date(self):
         if self.signature and self.frm_pin:
             self.date_expiration_sign = api_facturae.p12_expiration_date(self.signature, self.frm_pin)
