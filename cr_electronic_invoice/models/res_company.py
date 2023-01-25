@@ -58,7 +58,7 @@ class CompanyElectronic(models.Model):
         string='Users'
     )
     to_emails = fields.Char(
-        string='Email'
+        string='Email @'
     )
 
     identification_id = fields.Many2one(
