@@ -8,5 +8,4 @@ _logger = logging.getLogger(__name__)
 class ResCompany(models.Model):
     _inherit = "res.company"
 
-    url_timbre_odontologico = fields.Char("URL Timbre Od.")
-    usuario_timbre_odontologico = fields.Char("Usuario Timbre Od.")
+    correo_timbre_odontologico = fields.Many2one("res.partner","Correo",domain="[('is_partner_to_timbre','=',True)]")

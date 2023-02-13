@@ -955,6 +955,8 @@ def consulta_documentos(self, inv, env, token_m_h, date_cr, xml_firmado):
 
             # limpia el template de los attachments
             email_template.attachment_ids = [(5, 0, 0)]
+    if estado_m_h == "aceptado":
+        inv.action_invoice_sent_mass()
 
 
 def send_message(inv, date_cr, xml, token, env):

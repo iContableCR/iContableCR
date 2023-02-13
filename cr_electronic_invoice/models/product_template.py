@@ -4,6 +4,8 @@ from odoo import models, fields, api
 class ProductElectronic(models.Model):
     _inherit = "product.template"
 
+    exent_product = fields.Boolean("Excento Pr.",default=False)
+
     # ==============================================================================================
     #                                          PRODUCT TEMPLATES
     # ==============================================================================================

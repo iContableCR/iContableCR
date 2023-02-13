@@ -6,6 +6,9 @@
         <field name="model">account.move</field>
         <field name="inherit_id" ref="cr_electronic_invoice.view_move_form_inherit"/>
         <field name="arch" type="xml">
+            <xpath expr="//field[@name='tipo_documento']" position="after">
+                <field name="is_timbre" />
+            </xpath>
             <xpath expr="//field[@name='xml_respuesta_tributacion']" position="after">
                 <field name="xml_timbre" />
             </xpath>

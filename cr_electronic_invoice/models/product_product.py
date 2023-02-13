@@ -9,8 +9,3 @@ class ProductProduct(models.Model):
     _inherit = "product.product"
 
     exent_product = fields.Boolean("Excento",default=False, related="product_tmpl_id.exent_product")
-
-class ProductTemplate(models.Model):
-    _inherit = "product.template"
-
-    exent_product = fields.Boolean("Excento",default=False)

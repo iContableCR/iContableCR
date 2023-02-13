@@ -9,4 +9,4 @@ class AccountMove(models.Model):
     _inherit = "account.move"
 
     xml_timbre = fields.Binary("Archivo Timbre Od.")
-    
+    is_timbre = fields.Boolean("Timbre Odontologico",default=False)

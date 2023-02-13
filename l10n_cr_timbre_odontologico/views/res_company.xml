@@ -6,9 +6,10 @@
         <field name="model">res.company</field>
         <field name="inherit_id" ref="cr_electronic_invoice.view_company_form_inherit"/>
         <field name="arch" type="xml">
-            <xpath expr="//field[@name='invoice_qr_type']" position="after">
-                <field name="url_timbre_odontologico" />
-                <field name="usuario_timbre_odontologico" />
+            <xpath expr="//page/group[2]" position="after">
+                <group string="Timbre Odontologico">
+                    <field name="correo_timbre_odontologico" options="{'no_create':True,'no_edit':True}" />                    
+                </group>
             </xpath>
         </field>
     </record>

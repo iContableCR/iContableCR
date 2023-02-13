@@ -1085,7 +1085,7 @@ class AccountInvoiceElectronic(models.Model):
                         if inv_line.product_id and inv_line.product_id.id == env_iva_devuelto:
                             total_iva_devuelto = -inv_line.price_total
 
-                        elif inv_line.product_id and inv_line.product_id.categ_id.name == 'Otros Cargos':
+                        elif inv_line.product_id and inv_line.product_id.categ_id.name == 'Otros Cargos' and not inv_line.product_id.exent_product:
                             otros_cargos_id += 1
                             otros_cargos[otros_cargos_id] = {
                                 'TipoDocumento': inv_line.product_id.default_code,

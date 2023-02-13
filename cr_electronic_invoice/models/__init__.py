@@ -9,6 +9,7 @@ from . import code_type_product
 from . import fe_enums
 from . import identification_type
 from . import product_template
+from . import product_product
 from . import product_category
 from . import reference_code
 from . import reference_document
