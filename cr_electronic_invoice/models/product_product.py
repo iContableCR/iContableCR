@@ -8,4 +8,4 @@ _logger = logging.getLogger(__name__)
 class ProductProduct(models.Model):
     _inherit = "product.product"
 
-    exent_product = fields.Boolean("Excento",default=False, related="product_tmpl_id.exent_product")
+    exent_product = fields.Boolean("Excento",related="product_tmpl_id.exent_product")
