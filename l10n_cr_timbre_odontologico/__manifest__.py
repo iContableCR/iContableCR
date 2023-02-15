@@ -14,6 +14,7 @@
         'data/mail_template_data.xml',
         'views/res_company.xml',
         'views/account_move.xml',
+        'views/product_product.xml',
         'reports/account_move.xml',
     ],
 }
