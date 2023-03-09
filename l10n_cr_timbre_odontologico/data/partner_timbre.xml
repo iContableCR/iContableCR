@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="partner_timbre_odontologico_test" model="res.partner">
+            <field name="name">Timbre Odontologico Pruebas</field>            
+            <field name="is_partner_to_timbre">1</field>            
+        </record>
+        <record id="partner_timbre_odontologico_production" model="res.partner">
+            <field name="name">Timbre Odontologico Producción</field>            
+            <field name="is_partner_to_timbre">1</field>            
+        </record>
+    </data>
+</odoo>

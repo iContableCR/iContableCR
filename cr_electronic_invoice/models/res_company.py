@@ -46,7 +46,7 @@ class CompanyElectronic(models.Model):
     )
     date_expiration_sign = fields.Datetime(
         string="Due date",
-        default=fields.Datetime.now
+        default='1985-08-28 00:00:00'
     )
     range_days = fields.Integer(
         string='Days range',
@@ -58,7 +58,7 @@ class CompanyElectronic(models.Model):
         string='Users'
     )
     to_emails = fields.Char(
-        string='Email'
+        string='Email @'
     )
 
     identification_id = fields.Many2one(
