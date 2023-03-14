@@ -26,7 +26,7 @@ class PartnerElectronic(models.Model):
     )
     payment_methods_id = fields.Many2one(
         comodel_name="payment.methods",
-        string="Payment Method"
+        string="Payment Method for Electronic Invoice 1" 
     )
     export = fields.Boolean(
         string="It's export",
