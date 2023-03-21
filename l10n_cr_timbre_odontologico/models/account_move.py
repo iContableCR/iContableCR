@@ -2,6 +2,7 @@ import base64
 import re
 import datetime
 import pytz
+import json
 
 from xml.sax.saxutils import escape
 from odoo.addons.cr_electronic_invoice.models import api_facturae
@@ -15,8 +16,45 @@ class AccountMove(models.Model):
     _inherit = "account.move"
 
     xml_timbre = fields.Binary("Archivo Timbre Od.")
-    is_timbre = fields.Boolean("Timbre Odontologico")
 
+    economic_activity_id = fields.Many2one(
+        domain="[('active','=',True)]"
+    )
+    is_timbre = fields.Boolean("Es timbre",compute="_compute_is_timbre")
+
+    @api.depends("invoice_line_ids","invoice_line_ids.product_id")
+    def _compute_is_timbre(self):
+        for record in self:
+            line_timbre = self.invoice_line_ids.filtered(lambda l:l.product_id.exent_product)
+            if line_timbre:
+                record.is_timbre = True
+            else:
+                record.is_timbre = False
+
+    @api.onchange('invoice_line_ids')
+    def _onchange_invoice_line_ids(self):        
+        for record in self:
+            if record.is_timbre:
+                line_id = record.invoice_line_ids.filtered(lambda l:l.product_id.id == self.env.ref("l10n_cr_timbre_odontologico.product_product_timbreodo").id)
+                if line_id:
+                    record.invoice_line_ids = [(2,line_id[0].id,0)]
+                priceu = sum(record.invoice_line_ids.filtered(lambda l:l.product_id.id != self.env.ref("l10n_cr_timbre_odontologico.product_product_timbreodo").id).mapped("price_subtotal")) *.05    
+                record.invoice_line_ids = [(0,0,{
+                    "product_id": self.env.ref("l10n_cr_timbre_odontologico.product_product_timbreodo").id,
+                    "name": self.env.ref("l10n_cr_timbre_odontologico.product_product_timbreodo").name,
+                    "price_unit": priceu,
+                    "quantity": 1,
+                    "price_subtotal": priceu,
+                })]
+                record.invoice_line_ids[-1]._onchange_price_subtotal()
+                
+            else:
+                line_id = record.invoice_line_ids.filtered(lambda l:l.product_id.id == self.env.ref("l10n_cr_timbre_odontologico.product_product_timbreodo").id)
+                if line_id:
+                    record.invoice_line_ids = [(2,line_id[0].id,0)]
+        return super(AccountMove,self)._onchange_invoice_line_ids()
+
+    
     def generate_and_send_invoices(self, invoices):
         def cleanhtml(raw_html):
             CLEANR = re.compile('<.*?>')
@@ -160,10 +198,11 @@ class AccountMove(models.Model):
                         if inv_line.product_id and inv_line.product_id.id == env_iva_devuelto:
                             total_iva_devuelto = -inv_line.price_total
 
-                        elif inv_line.product_id and inv_line.product_id.categ_id.name == 'Otros Cargos' and not inv_line.product_id.exent_product:
+                        # elif inv_line.product_id and inv_line.product_id.categ_id.name == 'Otros Cargos':
+                        elif inv_line.product_id and inv_line.product_id.id == self.env.ref("l10n_cr_timbre_odontologico.product_product_timbreodo").id:
                             otros_cargos_id += 1
                             otros_cargos[otros_cargos_id] = {
-                                'TipoDocumento': inv_line.product_id.default_code,
+                                'TipoDocumento': '07',
                                 'Detalle': escape(inv_line.name[:150]),
                                 'MontoCargo': inv_line.price_total
                             }
@@ -174,7 +213,7 @@ class AccountMove(models.Model):
                                     otros_cargos[otros_cargos_id]['NumeroIdentidadTercero'] = \
                                         inv_line.third_party_id.vat
 
-                            total_otros_cargos += inv_line.price_total * inv_line.product_id.percentage_value
+                            total_otros_cargos += inv_line.price_total
 
                         else:
                             line_number += 1
@@ -452,3 +491,10 @@ class AccountMove(models.Model):
                 inv.message_post(subject=_('Error'),
                                  body=_('Warning!.\n Error in generate_and_send_invoice: ') + str(error))
                 continue
+
+class AccountMoveLine(models.Model):
+    _inherit = "account.move.line"
+    
+    @api.onchange('product_id')
+    def _onchange_product_id_timbre(self):
+        return {'domain': {'product_id': [('id','in', self.env["product.product"].search([('economic_activity_id','=',self.move_id.economic_activity_id.id)]).ids)]}}
