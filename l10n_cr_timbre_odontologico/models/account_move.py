@@ -38,7 +38,7 @@ class AccountMove(models.Model):
                 line_id = record.invoice_line_ids.filtered(lambda l:l.product_id.id == self.env.ref("l10n_cr_timbre_odontologico.product_product_timbreodo").id)
                 if line_id:
                     record.invoice_line_ids = [(2,line_id[0].id,0)]
-                priceu = sum(record.invoice_line_ids.filtered(lambda l:l.product_id.id != self.env.ref("l10n_cr_timbre_odontologico.product_product_timbreodo").id).mapped("price_subtotal")) *.05    
+                priceu = sum(record.invoice_line_ids.filtered(lambda l:l.product_id.id != self.env.ref("l10n_cr_timbre_odontologico.product_product_timbreodo").id and l.product_id.exent_product).mapped("price_subtotal")) *.05    
                 record.invoice_line_ids = [(0,0,{
                     "product_id": self.env.ref("l10n_cr_timbre_odontologico.product_product_timbreodo").id,
                     "name": self.env.ref("l10n_cr_timbre_odontologico.product_product_timbreodo").name,

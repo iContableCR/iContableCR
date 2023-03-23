@@ -7,7 +7,7 @@
                 <tr>
                     <td><strong>Timbre Od.</strong></td>
                     <td class="text-right">
-                        <span t-esc="sum(o.invoice_line_ids.filtered(lambda l:l.product_id.categ_id.name == 'Otros Cargos' and not l.product_id.exent_product).mapped('price_total'))"/>
+                        <span t-esc="sum(o.invoice_line_ids.filtered(lambda l:l.product_id.id == env.ref('l10n_cr_timbre_odontologico.product_product_timbreodo').id).mapped('price_total'))" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
                     </td>
                 </tr>
             </t>
