@@ -1489,26 +1489,26 @@ class AccountInvoiceElectronic(models.Model):
 
             # Calcular si aplica IVA Devuelto
             # Sólo aplica para clínicas y para pago por tarjeta
-            # actividad_iva_devuelto = 'CLINICA, CENTROS MEDICOS, HOSPITALES PRIVADOS Y OTROS'
-            # if inv.economic_activity_id.name == actividad_iva_devuelto and inv.payment_methods_id.sequence == '02':
-            #     prod_iva_devuelto = self.env.ref('cr_electronic_invoice.product_iva_devuelto')
-            #     iva_devuelto = 0
-            #     for inv_line in inv.invoice_line_ids:
-            #         if inv_line.product_id:
-            #             # Remove any existing IVA Devuelto lines
-            #             if inv_line.product_id.id == prod_iva_devuelto.id:
-            #                 inv_line.unlink
-            #             elif inv_line.product_id.categ_id.name == 'Servicios de Salud':
-            #                 iva_devuelto += inv_line.price_tax
-            #     if iva_devuelto:
-            #         self.env['account.move.line'].create({
-            #             'name': 'IVA Devuelto',
-            #             'invoice_id': inv.id,
-            #             'product_id': prod_iva_devuelto.id,
-            #             'account_id': prod_iva_devuelto.property_account_income_id.id,
-            #             'price_unit': -iva_devuelto,
-            #             'quantity': 1,
-            #         })
+            actividad_iva_devuelto = 'CLINICA, CENTROS MEDICOS, HOSPITALES PRIVADOS Y OTROS'
+            if inv.economic_activity_id.name == actividad_iva_devuelto and inv.payment_methods_id.sequence == '02':
+                prod_iva_devuelto = self.env.ref('cr_electronic_invoice.product_iva_devuelto')
+                iva_devuelto = 0
+                for inv_line in inv.invoice_line_ids:
+                    if inv_line.product_id:
+                        # Remove any existing IVA Devuelto lines
+                        if inv_line.product_id.id == prod_iva_devuelto.id:
+                            inv_line.unlink
+                        elif inv_line.product_id.categ_id.name == 'Servicios de Salud':
+                            iva_devuelto += inv_line.price_tax
+                if iva_devuelto:
+                    self.env['account.move.line'].create({
+                        'name': 'IVA Devuelto',
+                        'invoice_id': inv.id,
+                        'product_id': prod_iva_devuelto.id,
+                        'account_id': prod_iva_devuelto.property_account_income_id.id,
+                        'price_unit': -iva_devuelto,
+                        'quantity': 1,
+                    })
 
             super().action_post()
             if not inv.number_electronic:
