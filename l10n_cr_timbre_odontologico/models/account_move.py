@@ -194,12 +194,17 @@ class AccountMove(models.Model):
                     for inv_line in inv.invoice_line_ids.filtered(lambda x: not x.display_type):
 
                         # Revisamos si está línea es de Otros Cargos
-                        env_iva_devuelto = self.env.ref('cr_electronic_invoice.product_iva_devuelto').id
-                        if inv_line.product_id and inv_line.product_id.id == env_iva_devuelto:
-                            total_iva_devuelto = -inv_line.price_total
-
+                        # env_iva_devuelto = self.env.ref('cr_electronic_invoice.product_iva_devuelto').id
+                        # if inv_line.product_id and inv_line.product_id.id == env_iva_devuelto:
+                        #     total_iva_devuelto = -inv_line.price_total
+                        env_iva_devuelto = 0
+                        if inv.payment_methods_id.sequence == '02':
+                            for inv_line_1 in inv.invoice_line_ids:
+                                if inv_line_1.product_id.service_medic and self.env.ref('cr_electronic_invoice.iva_tax_07').id in inv_line_1.tax_ids.ids and len(inv_line_1.tax_ids.ids)==1:
+                                    env_iva_devuelto += inv_line_1.price_total-inv_line_1.price_subtotal
+                        total_iva_devuelto = env_iva_devuelto
                         # elif inv_line.product_id and inv_line.product_id.categ_id.name == 'Otros Cargos':
-                        elif inv_line.product_id and inv_line.product_id.id == self.env.ref("l10n_cr_timbre_odontologico.product_product_timbreodo").id:
+                        if inv_line.product_id and inv_line.product_id.id == self.env.ref("l10n_cr_timbre_odontologico.product_product_timbreodo").id:
                             otros_cargos_id += 1
                             otros_cargos[otros_cargos_id] = {
                                 'TipoDocumento': '07',
@@ -395,7 +400,7 @@ class AccountMove(models.Model):
                         continue
 
                     if abs(base_subtotal + total_impuestos +
-                           total_otros_cargos - total_iva_devuelto - inv.amount_total) > 0.5:
+                           total_otros_cargos - total_iva_devuelto - (inv.amount_total-total_iva_devuelto)) > 0.5:
                         inv.state_tributacion = 'error'
                         inv.message_post(
                             subject=_('Error'),
