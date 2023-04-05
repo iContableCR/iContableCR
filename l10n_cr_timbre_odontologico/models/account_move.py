@@ -19,7 +19,7 @@ class AccountMove(models.Model):
     xml_timbre = fields.Binary("Archivo Timbre Od.")
 
     economic_activity_id = fields.Many2one(
-        domain="[('active','=',True)]"
+        domain="[('active','=',True)]", required=True
     )
     is_timbre = fields.Boolean("Es timbre",compute="_compute_is_timbre")
 
@@ -597,7 +597,8 @@ class AccountMove(models.Model):
 
                 # if journal doesn't have terminal use default from company
                 terminal_id = inv.journal_id.terminal or self.env.user.company_id.terminal_MR
-
+                if not sequence:
+                    sequence = inv.payment_reference[-10:]
                 response_json = api_facturae.get_clave_hacienda(inv,
                                                                 inv.tipo_documento,
                                                                 sequence,

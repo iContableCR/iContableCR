@@ -290,13 +290,13 @@ class AccountInvoiceElectronic(models.Model):
             if inv.move_type in ('in_invoice', 'in_refund'):
                 if inv.partner_id:
                     inv.economic_activities_ids = inv.partner_id.economic_activities_ids if inv.partner_id.economic_activities_ids else False
-                    inv.economic_activity_id = inv.partner_id.activity_id
+                    # inv.economic_activity_id = inv.partner_id.activity_id
                 else:
                     inv.economic_activities_ids = self.env['economic.activity'].search([('active', '=', False)])
-                    inv.economic_activity_id = inv.company_id.activity_id.id
+                    # inv.economic_activity_id = inv.company_id.activity_id.id
             else:
                 inv.economic_activities_ids = self.env['economic.activity'].search([('active', '=', False)])
-                inv.economic_activity_id = inv.company_id.activity_id.id
+                # inv.economic_activity_id = inv.company_id.activity_id.id
 
     @api.onchange('partner_id')
     def _onchange_partner_id(self):
@@ -306,13 +306,13 @@ class AccountInvoiceElectronic(models.Model):
         if self.move_type in ('in_invoice', 'in_refund'):
             if self.partner_id:
                 self.economic_activities_ids = self.partner_id.economic_activities_ids
-                self.economic_activity_id = self.partner_id.activity_id
+                # self.economic_activity_id = self.partner_id.activity_id
             else:
-                self.economic_activity_id = False
+                # self.economic_activity_id = False
                 self.economic_activities_ids = []
         else:
             self.economic_activities_ids = self.env['economic.activity'].search([('active', '=', True)])
-            self.economic_activity_id = self.company_id.activity_id
+            # self.economic_activity_id = self.company_id.activity_id
 
         if self.partner_id and self.partner_id.export:
             self.tipo_documento = 'FEE'
@@ -436,9 +436,9 @@ class AccountInvoiceElectronic(models.Model):
                 tipo_documento = 'TE'
                 self.tipo_documento = 'TE'
             if tipo_documento == 'FE':
-                if self.journal_id.FE_sequence_id:
-                    sequence = self.journal_id.FE_sequence_id.next_by_id()
-                else:
+                # if self.journal_id.FE_sequence_id:
+                    # sequence = self.journal_id.FE_sequence_id.next_by_id()
+                # else:
                     self.state_tributacion = "na"
                     self.message_post(
                         subject=_('Warning'),
@@ -1392,11 +1392,11 @@ class AccountInvoiceElectronic(models.Model):
             company = company_id and self.env['res.company'].browse(company_id)
             if not vals.get('payment_methods_id') and partner and partner.payment_methods_id:
                 vals['payment_methods_id'] = partner.payment_methods_id.id
-            if not vals.get('economic_activity_id'):
-                if move_type in ('in_invoice', 'in_refund') and partner_id:
-                    vals['economic_activity_id'] = partner.activity_id.id
-                elif move_type in ('out_invoice', 'out_refund') and company_id:
-                    vals['economic_activity_id'] = company.activity_id.id
+            # if not vals.get('economic_activity_id'):
+            #     if move_type in ('in_invoice', 'in_refund') and partner_id:
+            #         vals['economic_activity_id'] = partner.activity_id.id
+            #     elif move_type in ('out_invoice', 'out_refund') and company_id:
+            #         vals['economic_activity_id'] = company.activity_id.id
             if not vals.get('tipo_documento'):
                 if partner_id and partner.export:
                     vals['tipo_documento'] = 'FEE'
@@ -1481,7 +1481,7 @@ class AccountInvoiceElectronic(models.Model):
                 pass
             else:
                 (tipo_documento, sequence) = inv.get_invoice_sequence()
-                if tipo_documento and sequence:
+                if tipo_documento and not sequence:
                     inv.tipo_documento = tipo_documento
                 else:
                     super().action_post()
@@ -1517,7 +1517,8 @@ class AccountInvoiceElectronic(models.Model):
 
                 # if journal doesn't have terminal use default from company
                 terminal_id = inv.journal_id.terminal or self.env.user.company_id.terminal_MR
-
+                if not sequence:
+                    sequence = inv.payment_reference[-10:]
                 response_json = api_facturae.get_clave_hacienda(inv,
                                                                 inv.tipo_documento,
                                                                 sequence,
