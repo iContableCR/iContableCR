@@ -559,7 +559,7 @@ class AccountMove(models.Model):
                 pass
             else:
                 (tipo_documento, sequence) = inv.get_invoice_sequence()
-                if tipo_documento and sequence:
+                if tipo_documento: #and sequence:
                     inv.tipo_documento = tipo_documento
                 else:
                     super().action_post()
