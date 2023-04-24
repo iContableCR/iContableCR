@@ -24,15 +24,15 @@
                 </h2>
                 <div id="electronic_data" class="row mt32 mb32">
                     <div class="col-auto col-3 mw-100 mb-2" t-if="o.number_electronic" name="number_electronic">
-                        <strong>Electronic Number:</strong>
+                        <strong>Numero Electrónico:</strong>
                         <p class="m-0" t-field="o.number_electronic"/>
                     </div>
                     <div class="col-auto col-3 mw-100 mb-2" t-if="o.sequence" name="sequence">
-                        <strong>Electronic consecutive:</strong>
+                        <strong>Electrónico consecutivo:</strong>
                         <p class="m-0" t-field="o.sequence"/>
                     </div>
                     <div class="col-auto col-3 mw-100 mb-2" t-if="o.tipo_documento" name="tipo_documento">
-                        <strong>Document Type:</strong>
+                        <strong>Tipo Documento:</strong>
                         <p class="m-0" t-field="o.tipo_documento"/>
                     </div>
                 </div>
@@ -81,7 +81,7 @@
                                 <span>Taxes</span>
                             </th>
                             <th name="th_subtotal" class="text-right">
-                                <span groups="account.group_show_line_subtotals_tax_excluded">Amount</span>
+                                <span groups="account.group_show_line_subtotals_tax_excluded">Monto</span>
                                 <span groups="account.group_show_line_subtotals_tax_included">Total Price</span>
                             </th>
                         </tr>
