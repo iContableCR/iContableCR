@@ -1481,7 +1481,7 @@ class AccountInvoiceElectronic(models.Model):
                 pass
             else:
                 (tipo_documento, sequence) = inv.get_invoice_sequence()
-                if tipo_documento and not sequence:
+                if tipo_documento: #and not sequence:
                     inv.tipo_documento = tipo_documento
                 else:
                     super().action_post()
