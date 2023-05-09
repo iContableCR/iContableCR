@@ -30,15 +30,7 @@
                         <span t-esc="service_medic" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
                     </td>
                 </tr>
-            </t>
-            <!-- <t t-if="o.invoice_line_ids.filtered(lambda l: env.ref('cr_electronic_invoice.exempt_tax_sale').id in l.tax_ids.ids)">
-            <tr>
-                    <td><strong>IVA Devuelto</strong></td>
-                    <td class="text-right">
-                        <span t-esc="service_medic" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
-                    </td>
-                </tr> 
-            </t> -->
+            </t>            
             <t t-if="o.is_timbre">
                 <tr>
                     <td><strong>Timbre Od.</strong></td>
@@ -57,8 +49,8 @@
             </tr>
     </template>
     <template id="report_invoice_document_timbre" inherit_id="account.report_invoice_document">
-        <xpath expr="//t[@t-call='account.document_tax_totals']" position="replace">
-            <t t-call="document_tax_totals_timbre_2"/>
+        <xpath expr="//t[@t-call='account.document_tax_totals']" position="replace">            
+            <t t-call="l10n_cr_timbre_odontologico.document_tax_totals_timbre_2"/>
         </xpath>
     </template>
 
