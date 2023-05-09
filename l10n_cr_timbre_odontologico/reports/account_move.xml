@@ -67,11 +67,11 @@
             </tr>
         </xpath>
     </template>
-    <!-- <template id="report_invoice_document_timbre" inherit_id="account.report_invoice_document">
+    <template id="report_invoice_document_timbre" inherit_id="account.report_invoice_document">
         <xpath expr="//t[@t-call='account.document_tax_totals']" position="replace">
-            <t t-call="document_tax_totals_timbre"/>
+            <t t-call="document_tax_totals_timbre_1"/>
         </xpath>
-    </template> -->
+    </template>
 
     
     <template id="tax_groups_totals_timbre" inherit_id="account.tax_groups_totals">
