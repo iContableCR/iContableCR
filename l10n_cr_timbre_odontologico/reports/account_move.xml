@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <template id="document_tax_totals_timbre_1">                
-        <!-- <xpath expr="//t[@t-as='subtotal']" position="after"> -->
+    <template id="document_tax_totals_timbre_2">                
             <t t-foreach="tax_totals['subtotals']" t-as="subtotal">
                 <tr class="border-black o_subtotal">
                     <td><strong t-esc="subtotal['name']"/></td>
@@ -52,24 +51,14 @@
             <!--Total amount with all taxes-->
             <tr class="border-black o_total">
                 <td><strong>Total</strong></td>
-                <td class="text-right">
-                    <span t-esc="tax_totals['formatted_amount_total']"/>
-                </td>
-            </tr>
-        <!-- </xpath> -->
-        <xpath expr="//tr[@class='border-black o_total']" position="replace">
-            -Total amount with all taxes-
-            <tr class="border-black o_total">
-                <td><strong>Total</strong></td>
                 <td class="text-right">                    
-                    <span t-esc="float(tax_totals['formatted_amount_total'].replace('₡','').replace(',',''))-service_medic" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                    <span t-esc="float(tax_totals['formatted_amount_total'].replace('₡','').replace(',',''))-service_medic" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: o.currency_id}"/>
                 </td>
             </tr>
-        </xpath>
     </template>
     <template id="report_invoice_document_timbre" inherit_id="account.report_invoice_document">
         <xpath expr="//t[@t-call='account.document_tax_totals']" position="replace">
-            <t t-call="document_tax_totals_timbre_1"/>
+            <t t-call="document_tax_totals_timbre_2"/>
         </xpath>
     </template>
 
