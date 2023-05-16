@@ -440,17 +440,17 @@ class AccountInvoiceElectronic(models.Model):
                     # sequence = self.journal_id.FE_sequence_id.next_by_id()
                 # else:
                     self.state_tributacion = "na"
-                    self.message_post(
-                        subject=_('Warning'),
-                        body=no_sequence_message)
+                    # self.message_post(
+                    #     subject=_('Warning'),
+                    #     body=no_sequence_message)
             elif tipo_documento == 'TE':
                 # if self.journal_id.TE_sequence_id:
                 #     sequence = self.journal_id.TE_sequence_id.next_by_id()
                 # else:
                     self.state_tributacion = "na"
-                    self.message_post(
-                        subject=_('Warning'),
-                        body=no_sequence_message)
+                    # self.message_post(
+                    #     subject=_('Warning'),
+                    #     body=no_sequence_message)
             elif tipo_documento == 'ND':
                 if self.journal_id.ND_sequence_id:
                     sequence = self.journal_id.ND_sequence_id.next_by_id()
