@@ -436,21 +436,21 @@ class AccountInvoiceElectronic(models.Model):
                 tipo_documento = 'TE'
                 self.tipo_documento = 'TE'
             if tipo_documento == 'FE':
-                # if self.journal_id.FE_sequence_id:
-                    # sequence = self.journal_id.FE_sequence_id.next_by_id()
-                # else:
+                if self.journal_id.FE_sequence_id:
+                    sequence = self.journal_id.FE_sequence_id.next_by_id()
+                else:
                     self.state_tributacion = "na"
-                    # self.message_post(
-                    #     subject=_('Warning'),
-                    #     body=no_sequence_message)
+                    self.message_post(
+                        subject=_('Warning'),
+                        body=no_sequence_message)
             elif tipo_documento == 'TE':
-                # if self.journal_id.TE_sequence_id:
-                #     sequence = self.journal_id.TE_sequence_id.next_by_id()
-                # else:
+                if self.journal_id.TE_sequence_id:
+                    sequence = self.journal_id.TE_sequence_id.next_by_id()
+                else:
                     self.state_tributacion = "na"
-                    # self.message_post(
-                    #     subject=_('Warning'),
-                    #     body=no_sequence_message)
+                    self.message_post(
+                        subject=_('Warning'),
+                        body=no_sequence_message)
             elif tipo_documento == 'ND':
                 if self.journal_id.ND_sequence_id:
                     sequence = self.journal_id.ND_sequence_id.next_by_id()
@@ -1481,7 +1481,7 @@ class AccountInvoiceElectronic(models.Model):
                 pass
             else:
                 (tipo_documento, sequence) = inv.get_invoice_sequence()
-                if tipo_documento: #and not sequence:
+                if tipo_documento and not sequence:
                     inv.tipo_documento = tipo_documento
                 else:
                     super().action_post()
