@@ -22,7 +22,7 @@ class AccountMove(models.Model):
         domain="[('active','=',True)]", required=True
     )
     is_timbre = fields.Boolean("Es timbre",compute="_compute_is_timbre")
-
+    payment_reference = fields.Char(related="sequence")
     @api.depends("invoice_line_ids","invoice_line_ids.product_id")
     def _compute_is_timbre(self):
         for record in self:
@@ -596,9 +596,7 @@ class AccountMove(models.Model):
                 sucursal_id = inv.journal_id.sucursal or self.env.user.company_id.sucursal_MR
 
                 # if journal doesn't have terminal use default from company
-                terminal_id = inv.journal_id.terminal or self.env.user.company_id.terminal_MR
-                if not sequence:
-                    sequence = inv.payment_reference[-10:]
+                terminal_id = inv.journal_id.terminal or self.env.user.company_id.terminal_MR                
                 response_json = api_facturae.get_clave_hacienda(inv,
                                                                 inv.tipo_documento,
                                                                 sequence,
