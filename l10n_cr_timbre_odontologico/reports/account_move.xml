@@ -44,7 +44,7 @@
             <tr class="border-black o_total">
                 <td><strong>Total</strong></td>
                 <td class="text-right">                    
-                    <span t-esc="float(tax_totals['formatted_amount_total'].replace('₡','').replace('$','').replace(',',''))-service_medic" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: o.currency_id}"/>
+                    <span t-esc="float(tax_totals['formatted_amount_total'].replace('₡','').replace('$','').replace(',',''))" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: o.currency_id}"/>
                 </td>
             </tr>
     </template>
