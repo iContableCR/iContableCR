@@ -175,7 +175,8 @@ class AccountMove(models.Model):
                         custom_rate = currency.rate_ids.search([('name','=',fields.Date.today())],limit=1)
                         currency_rate = round(1.0 / currency.rate, 5)
                         if custom_rate:
-                            currency_rate = round(1.0 / custom_rate.inverse_original_rate_2, 5)
+                            # currency_rate = round(1.0 / custom_rate.inverse_original_rate_2, 5)
+                            currency_rate = max([custom_rate.original_rate,custom_rate.original_rate_2])
                         
 
                     # Generamos las líneas de la factura
