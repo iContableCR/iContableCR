@@ -1076,7 +1076,8 @@ def load_xml_data(invoice, load_lines, account_id, product_id=False, analytic_ac
                                                          'phone': telefono_emisor,
                                                          'email': correo_emisor,
                                                          'street': otrassenas_emisor,
-                                                         'supplier': 'True'})
+                                                        #  'supplier': 'True'
+                                                         })
         if new_partner:
             invoice.partner_id = new_partner
         else:
