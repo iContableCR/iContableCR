@@ -57,3 +57,29 @@ class ResCurrency(models.Model):
                     if not currency_rate_obj.search([('name', '=', date)], limit=1):
                         currency_rate_obj._create_the_latest_exchange_rate_to_date(self, date)
                 date += timedelta(days=1)
+
+    def _get_rates(self, company, date):
+        if not self.ids:
+            return {}
+        self.env['res.currency.rate'].flush(['rate', 'currency_id', 'company_id', 'name'])
+        query = """SELECT c.id,
+                          COALESCE((SELECT 1/GREATEST(r.original_rate,r.original_rate_2) FROM res_currency_rate r
+                                  WHERE r.currency_id = c.id AND r.name <= %s
+                                    AND (r.company_id IS NULL OR r.company_id = %s)
+                               ORDER BY r.company_id, r.name DESC
+                                  LIMIT 1), 1.0) AS rate
+                   FROM res_currency c
+                   WHERE c.id IN %s"""
+        self._cr.execute(query, (date, company.id, tuple(self.ids)))
+        currency_rates = dict(self._cr.fetchall())
+        return currency_rates
+
+class AccountMove(models.Model):
+    _inherit = 'account.move'
+
+    custom_rate = fields.Float(string="Tasa de Cambio", compute="_compute_custom_rate")
+
+    @api.depends("currency_id")
+    def _compute_custom_rate(self):
+        for record in self:
+            record.custom_rate = 1 / record.currency_id.rate
