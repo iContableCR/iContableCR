@@ -15,6 +15,7 @@
         'views/res_company.xml',
         'views/account_move.xml',
         'views/product_product.xml',
+        'views/sale_order.xml',
         'reports/account_move.xml',
     ],
 }

@@ -8,11 +8,12 @@ _logger = logging.getLogger(__name__)
 class ProductProduct(models.Model):
     _inherit = "product.product"
 
-    exent_product = fields.Boolean("Excento Pr.",related="product_tmpl_id.exent_product")
-    percentage_value = fields.Float("Porcentaje Ex.",related="product_tmpl_id.percentage_value")
-
+    exent_product = fields.Boolean("Afecta Timbre Odontologico",related="product_tmpl_id.exent_product")
+    economic_activity_id = fields.Many2one("economic.activity","Actividad económica por defecto",related="product_tmpl_id.economic_activity_id")
+    service_medic = fields.Boolean("Es Servicio Medico", related='product_tmpl_id.service_medic')
 class ProductElectronic(models.Model):
     _inherit = "product.template"
 
-    exent_product = fields.Boolean("Excento")
-    percentage_value = fields.Float("Porcentaje")
+    exent_product = fields.Boolean("Afecta Timbre Odontologico")
+    economic_activity_id = fields.Many2one("economic.activity","Actividad económica por defecto",domain="[('active','=',True)]")
+    service_medic = fields.Boolean("Es Servicio Medico")

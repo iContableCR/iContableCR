@@ -2,10 +2,12 @@ import base64
 import re
 import datetime
 import pytz
+import json
 
 from xml.sax.saxutils import escape
 from odoo.addons.cr_electronic_invoice.models import api_facturae
 from odoo import models, fields, api, _
+from odoo.exceptions import UserError
 
 import logging
 _logger = logging.getLogger(__name__)
@@ -15,8 +17,45 @@ class AccountMove(models.Model):
     _inherit = "account.move"
 
     xml_timbre = fields.Binary("Archivo Timbre Od.")
-    is_timbre = fields.Boolean("Timbre Odontologico")
 
+    economic_activity_id = fields.Many2one(
+        domain="[('active','=',True)]", required=True
+    )
+    is_timbre = fields.Boolean("Es timbre",compute="_compute_is_timbre")
+    payment_reference = fields.Char(related="sequence")
+    @api.depends("invoice_line_ids","invoice_line_ids.product_id")
+    def _compute_is_timbre(self):
+        for record in self:
+            line_timbre = self.invoice_line_ids.filtered(lambda l:l.product_id.exent_product)
+            if line_timbre:
+                record.is_timbre = True
+            else:
+                record.is_timbre = False
+
+    @api.onchange('invoice_line_ids')
+    def _onchange_invoice_line_ids(self):        
+        for record in self:
+            if record.is_timbre:
+                line_id = record.invoice_line_ids.filtered(lambda l:l.product_id.id == self.env.ref("l10n_cr_timbre_odontologico.product_product_timbreodo").id)
+                if line_id:
+                    record.invoice_line_ids = [(2,line_id[0].id,0)]
+                priceu = sum(record.invoice_line_ids.filtered(lambda l:l.product_id.id != self.env.ref("l10n_cr_timbre_odontologico.product_product_timbreodo").id and l.product_id.exent_product).mapped("price_subtotal")) *.05    
+                record.invoice_line_ids = [(0,0,{
+                    "product_id": self.env.ref("l10n_cr_timbre_odontologico.product_product_timbreodo").id,
+                    "name": self.env.ref("l10n_cr_timbre_odontologico.product_product_timbreodo").name,
+                    "price_unit": priceu,
+                    "quantity": 1,
+                    "price_subtotal": priceu,
+                })]
+                record.invoice_line_ids[-1]._onchange_price_subtotal()
+                
+            else:
+                line_id = record.invoice_line_ids.filtered(lambda l:l.product_id.id == self.env.ref("l10n_cr_timbre_odontologico.product_product_timbreodo").id)
+                if line_id:
+                    record.invoice_line_ids = [(2,line_id[0].id,0)]
+        return super(AccountMove,self)._onchange_invoice_line_ids()
+
+    
     def generate_and_send_invoices(self, invoices):
         def cleanhtml(raw_html):
             CLEANR = re.compile('<.*?>')
@@ -132,7 +171,13 @@ class AccountMove(models.Model):
                     if currency.name == self.company_id.currency_id.name:
                         currency_rate = 1
                     else:
+                        # currency_rate = round(1.0 / currency.rate, 5)
+                        custom_rate = currency.rate_ids.search([('name','=',fields.Date.today())],limit=1)
                         currency_rate = round(1.0 / currency.rate, 5)
+                        if custom_rate:
+                            # currency_rate = round(1.0 / custom_rate.inverse_original_rate_2, 5)
+                            currency_rate = max([custom_rate.original_rate,custom_rate.original_rate_2])
+                        
 
                     # Generamos las líneas de la factura
                     lines = dict([])
@@ -158,12 +203,12 @@ class AccountMove(models.Model):
                         # Revisamos si está línea es de Otros Cargos
                         env_iva_devuelto = self.env.ref('cr_electronic_invoice.product_iva_devuelto').id
                         if inv_line.product_id and inv_line.product_id.id == env_iva_devuelto:
-                            total_iva_devuelto = -inv_line.price_total
-
-                        elif inv_line.product_id and inv_line.product_id.categ_id.name == 'Otros Cargos' and not inv_line.product_id.exent_product:
+                            total_iva_devuelto = -inv_line.price_total                        
+                        # elif inv_line.product_id and inv_line.product_id.categ_id.name == 'Otros Cargos':
+                        elif inv_line.product_id and inv_line.product_id.id == self.env.ref("l10n_cr_timbre_odontologico.product_product_timbreodo").id:
                             otros_cargos_id += 1
                             otros_cargos[otros_cargos_id] = {
-                                'TipoDocumento': inv_line.product_id.default_code,
+                                'TipoDocumento': '07',
                                 'Detalle': escape(inv_line.name[:150]),
                                 'MontoCargo': inv_line.price_total
                             }
@@ -174,7 +219,7 @@ class AccountMove(models.Model):
                                     otros_cargos[otros_cargos_id]['NumeroIdentidadTercero'] = \
                                         inv_line.third_party_id.vat
 
-                            total_otros_cargos += inv_line.price_total * inv_line.product_id.percentage_value
+                            total_otros_cargos += inv_line.price_total
 
                         else:
                             line_number += 1
@@ -452,3 +497,126 @@ class AccountMove(models.Model):
                 inv.message_post(subject=_('Error'),
                                  body=_('Warning!.\n Error in generate_and_send_invoice: ') + str(error))
                 continue
+    def action_post(self):
+        # Revisamos si el ambiente para Hacienda está habilitado
+        for inv in self:
+            if inv.company_id.frm_ws_ambiente == 'disabled':
+                super().action_post()
+                inv.tipo_documento = 'disabled'
+                continue
+            if inv.tipo_documento == 'disabled':
+                super().action_post()
+                continue
+
+            if inv.partner_id.has_exoneration and inv.partner_id.date_expiration and \
+               (inv.partner_id.date_expiration < datetime.date.today()):
+                raise UserError(_('The exoneration of this client has expired'))
+
+            currency = inv.currency_id
+            sequence = False
+            if (inv.invoice_id) and not (inv.reference_code_id and inv.reference_document_id):
+                raise UserError(_('Incomplete reference data for credit note'))
+            elif (inv.not_loaded_invoice or inv.not_loaded_invoice_date) and not \
+                (inv.not_loaded_invoice and inv.not_loaded_invoice_date and
+                 inv.reference_code_id and inv.reference_document_id):
+                raise UserError(_('Incomplete reference data for credit note not uploaded'))
+
+            if inv.move_type == 'in_invoice' and inv.partner_id.country_id and \
+               inv.partner_id.country_id.code == 'CR' and inv.partner_id.identification_id and \
+               inv.partner_id.vat and inv.economic_activity_id is False:
+                raise UserError(_('FEC invoices require that the supplier has defined the economic activity'))
+            # tipo de identificación
+            if not inv.company_id.identification_id:
+                raise UserError(_('Select the type of issuer identification in the company profile'))
+
+            if inv.partner_id and inv.partner_id.vat:
+                identificacion = re.sub('[^0-9]', '', inv.partner_id.vat)
+                id_code = inv.partner_id.identification_id and inv.partner_id.identification_id.code
+                if not id_code:
+                    if len(identificacion) == 9:
+                        id_code = '01'
+                    elif len(identificacion) == 10:
+                        id_code = '02'
+                    elif len(identificacion) in (11, 12):
+                        id_code = '03'
+                    else:
+                        id_code = '05'
+
+                if id_code == '01' and len(identificacion) != 9:
+                    raise UserError(_("The recipient's Physical ID must have 9 digits"))
+                elif id_code == '02' and len(identificacion) != 10:
+                    raise UserError(_('The Legal ID of the recipient must have 10 digits'))
+                elif id_code == '03' and len(identificacion) not in (11, 12):
+                    raise UserError(_("The recipient's DIMEX identification must have 11 or 12 digits"))
+                elif id_code == '04' and len(identificacion) != 10:
+                    raise UserError(_('The NITE identification of the receiver must have 10 digits'))
+
+            if inv.invoice_payment_term_id and not inv.invoice_payment_term_id.sale_conditions_id:
+                raise UserError(_('The electronic invoice could not be created: \n'
+                                'You must set up payment terms for %s') % (inv.invoice_payment_term_id.name))
+
+            # Validate if invoice currency is the same as the company currency
+            if currency.name != inv.company_id.currency_id.name and (not currency.rate_ids or not
+                                                                     (len(currency.rate_ids) > 0)):
+                raise UserError(_(f'There is no registered exchange rate for the currency {currency.name}'))
+
+            # Digital Invoice or ticket
+            if inv.move_type in ('out_invoice', 'out_refund') and inv.number_electronic:
+                pass
+            else:
+                (tipo_documento, sequence) = inv.get_invoice_sequence()
+                if tipo_documento and sequence:
+                    inv.tipo_documento = tipo_documento
+                else:
+                    super().action_post()
+                    continue
+
+            # Calcular si aplica IVA Devuelto
+            # Sólo aplica para clínicas y para pago por tarjeta            
+            if inv.payment_methods_id.sequence == '02':
+                prod_iva_devuelto = self.env.ref('cr_electronic_invoice.product_iva_devuelto')
+                iva_devuelto = 0
+                for inv_line in inv.invoice_line_ids:
+                    if inv_line.product_id.service_medic and self.env.ref('cr_electronic_invoice.iva_tax_07').id in inv_line.tax_ids.ids and len(inv_line.tax_ids.ids)==1:
+                        # # Remove any existing IVA Devuelto lines
+                        # if inv_line.product_id.id == prod_iva_devuelto.id:
+                        #     inv_line.unlink
+                        # elif inv_line.product_id.categ_id.name == 'Servicios de Salud':
+                            iva_devuelto += (inv_line.price_total-inv_line.price_subtotal)
+                if iva_devuelto:
+                    line_iva = inv.invoice_line_ids.filtered(lambda l:l.product_id.id == prod_iva_devuelto.id)
+                    if line_iva:
+                        inv.invoice_line_ids = [(5,0,line_iva[0].id)]
+                    inv.invoice_line_ids = [(0,0,{
+                        'name': 'IVA Devuelto',                                                
+                        'product_id': prod_iva_devuelto.id,
+                        'account_id': prod_iva_devuelto.property_account_income_id.id,
+                        'price_unit': -iva_devuelto,
+                        'quantity': 1,
+                        'price_total': -iva_devuelto,
+                    })]
+
+            super().action_post()
+            if not inv.number_electronic:
+                # if journal doesn't have sucursal use default from company
+                sucursal_id = inv.journal_id.sucursal or self.env.user.company_id.sucursal_MR
+
+                # if journal doesn't have terminal use default from company
+                terminal_id = inv.journal_id.terminal or self.env.user.company_id.terminal_MR                
+                response_json = api_facturae.get_clave_hacienda(inv,
+                                                                inv.tipo_documento,
+                                                                sequence,
+                                                                sucursal_id,
+                                                                terminal_id)
+
+                inv.number_electronic = response_json.get('clave')
+                inv.sequence = response_json.get('consecutivo')
+
+            inv.name = inv.sequence
+            inv.state_tributacion = False
+class AccountMoveLine(models.Model):
+    _inherit = "account.move.line"
+    
+    @api.onchange('product_id')
+    def _onchange_product_id_timbre(self):
+        return {'domain': {'product_id': [('id','in', self.env["product.product"].search([('economic_activity_id','=',self.move_id.economic_activity_id.id)]).ids)]}}

@@ -12,6 +12,22 @@
                     <button class="oe_stat_button" string="Update" type="object" icon="fa-refresh" name="action_create_missing_exchange_rates" attrs="{'invisible': [('active', '=', False)]}"/>
                 </div>
             </xpath>
+            <xpath expr="//field[@name='rate_ids']/tree/field[@name='company_rate']" position="after">
+                <!-- <field name="original_rate" />
+                <field name="rate_2" />
+                <field name="original_rate_2" /> -->
+                <field name="inverse_original_rate_2" digits="[12,12]" />
+            </xpath>
+        </field>
+    </record>
+    <record id="view_move_form_currency_cr_adpater" model="ir.ui.view">
+        <field name="name">account.move.view.form.currency_cr_adpater</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='journal_div']" position="after">
+                <field name="custom_rate" />
+            </xpath>
         </field>
     </record>
 </odoo>

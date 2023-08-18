@@ -8,7 +8,8 @@
         <field name="arch" type="xml">
             <xpath expr="//field[@name='invoice_policy']" position="before">
                 <field name="exent_product" />
-                <field name="percentage_value" attrs="{'invisible':[('exent_product','=',False)]}"/>
+                <field name="economic_activity_id" />
+                <field name="service_medic" />
             </xpath>
         </field>
     </record>

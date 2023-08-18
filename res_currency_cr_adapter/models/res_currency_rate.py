@@ -39,7 +39,7 @@ class ResCurrencyRate(models.Model):
         digits=0,
         compute="_compute_original_rate_2",
         inverse="_inverse_original_rate_2",
-        group_operator="avg",
+        group_operator="avg", store=True,
         help='The buying exchange rate from CRC to USD as it is send from BCCR')
 
     inverse_original_rate_2 = fields.Float(
@@ -84,7 +84,7 @@ class ResCurrencyRate(models.Model):
         last_rate = self.env['res.currency.rate']._get_last_rates_for_companies_2(self.company_id | self.env.company)
         for currency_rate in self:
             company = currency_rate.company_id or self.env.company
-            currency_rate.original_rate_2 = (currency_rate.rate_2 or self._get_latest_rate_2().rate_2 or 1.0) / last_rate[company]
+            currency_rate.original_rate_2 = (currency_rate.rate_2 or currency_rate._get_latest_rate_2().rate_2 or 1.0) / last_rate[company]
 
     @api.depends('original_rate_2')
     def _compute_inverse_original_rate_2(self):
