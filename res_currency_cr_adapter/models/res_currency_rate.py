@@ -39,7 +39,7 @@ class ResCurrencyRate(models.Model):
         digits=0,
         compute="_compute_original_rate_2",
         inverse="_inverse_original_rate_2",
-        group_operator="avg",
+        group_operator="avg", store=True,
         help='The buying exchange rate from CRC to USD as it is send from BCCR')
 
     inverse_original_rate_2 = fields.Float(

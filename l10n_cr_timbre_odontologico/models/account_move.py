@@ -614,6 +614,29 @@ class AccountMove(models.Model):
 
             inv.name = inv.sequence
             inv.state_tributacion = False
+    def _reverse_moves(self, default_values_list=None, cancel=False):
+        reverse_moves = super()._reverse_moves(default_values_list, cancel)
+        for inv in reverse_moves:
+            if not inv.number_electronic:
+                (tipo_documento, sequence) = inv.get_invoice_sequence()
+                if not inv.tipo_documento:
+                    inv.tipo_documento = tipo_documento
+                if not inv.sequence:
+                    inv.sequence = sequence
+                # if journal doesn't have sucursal use default from company
+                sucursal_id = inv.journal_id.sucursal or self.env.user.company_id.sucursal_MR
+
+                # if journal doesn't have terminal use default from company
+                terminal_id = inv.journal_id.terminal or self.env.user.company_id.terminal_MR                
+                response_json = api_facturae.get_clave_hacienda(inv,
+                                                                inv.tipo_documento,
+                                                                sequence,
+                                                                sucursal_id,
+                                                                terminal_id)
+
+                inv.number_electronic = response_json.get('clave')
+                inv.sequence = response_json.get('consecutivo')
+        return reverse_moves
 class AccountMoveLine(models.Model):
     _inherit = "account.move.line"
     
