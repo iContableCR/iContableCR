@@ -1479,6 +1479,9 @@ class AccountInvoiceElectronic(models.Model):
             # Digital Invoice or ticket
             if inv.move_type in ('out_invoice', 'out_refund') and inv.number_electronic:
                 pass
+            elif inv.move_type in ('entry'):
+                super().action_post()
+                continue
             else:
                 (tipo_documento, sequence) = inv.get_invoice_sequence()
                 if tipo_documento and not sequence:
