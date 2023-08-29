@@ -18,7 +18,8 @@ class AccountMoveLine(models.Model):
                     'route_ids': 1 and [
                         (6, 0, [x.id for x in self.env['stock.location.route'].search([('id', 'in', (2, 3))])])] or [],
                     'warehouse_id': picking.picking_type_id.warehouse_id.id,
-                    'product_uom_qty': line.quantity,
+                    'product_uom_qty': 0,
+                    'quantity_done': line.quantity,
                 }
         if picking.picking_type_id.code == 'outgoing':
             values.update({

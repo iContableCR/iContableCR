@@ -50,6 +50,7 @@ class AccountMove(models.Model):
                     lambda r: r.product_id.type in ['product', 'consu']).create_stock_move(pickings)
                 move_ids = moves._action_confirm()
                 move_ids._action_assign()
+                pickings.button_validate()
     
     def action_post(self):
         res = super(AccountMove,self).action_post()
