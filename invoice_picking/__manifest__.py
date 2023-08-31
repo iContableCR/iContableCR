@@ -11,5 +11,6 @@
     ],
     'data': [
         'views/account_move.xml',
+        'views/stock_picking_type.xml',
     ],
 }

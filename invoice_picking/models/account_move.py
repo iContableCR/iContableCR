@@ -34,15 +34,18 @@ class AccountMove(models.Model):
     def create_stock_picking(self):
         for order in self:
             code = False
+            domain=[]
             if self.move_type == 'out_invoice':
                 code = 'outgoing'
             if self.move_type == 'in_invoice':
                 code = 'incoming'
             if self.move_type == 'out_refund':
                 code = 'incoming'
+                domain.append(('is_return','=',True))
             if self.move_type == 'in_refund':
                 code = 'outgoing'
-            picking_type = self.env['stock.picking.type'].search([('code','=',code)],limit=1)
+            domain.append(('code','=',code))
+            picking_type = self.env['stock.picking.type'].search(domain,limit=1)
             if picking_type:
                 pickings = self.env['stock.picking'].create(self.prepare_values_stock_picking(picking_type))
                 order.stock_picking_ids = [(6,0,pickings.ids)]
