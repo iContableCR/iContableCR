@@ -34,15 +34,18 @@ class AccountMove(models.Model):
     def create_stock_picking(self):
         for order in self:
             code = False
+            domain=[]
             if self.move_type == 'out_invoice':
                 code = 'outgoing'
             if self.move_type == 'in_invoice':
                 code = 'incoming'
             if self.move_type == 'out_refund':
                 code = 'incoming'
+                domain.append(('is_return','=',True))
             if self.move_type == 'in_refund':
                 code = 'outgoing'
-            picking_type = self.env['stock.picking.type'].search([('code','=',code)],limit=1)
+            domain.append(('code','=',code))
+            picking_type = self.env['stock.picking.type'].search(domain,limit=1)
             if picking_type:
                 pickings = self.env['stock.picking'].create(self.prepare_values_stock_picking(picking_type))
                 order.stock_picking_ids = [(6,0,pickings.ids)]
@@ -54,7 +57,7 @@ class AccountMove(models.Model):
     
     def action_post(self):
         res = super(AccountMove,self).action_post()
-        if self.move_type in ('out_invoice','in_invoice','out_refund','in_refund'):
+        if self.move_type in ('out_invoice','in_invoice','out_refund','in_refund') and len(self.invoice_line_ids.filtered(lambda l:l.product_id.detailed_type in ['consu','product']))>0:
             self.create_stock_picking()
         return res
     
@@ -76,6 +79,6 @@ class AccountMove(models.Model):
     def _reverse_moves(self, default_values_list=None, cancel=False):
         reverse_moves = super()._reverse_moves(default_values_list, cancel)
         for moves in reverse_moves:
-            if moves.move_type in ('out_invoice','in_invoice','out_refund','in_refund'):
+            if moves.move_type in ('out_invoice','in_invoice','out_refund','in_refund') and len(moves.invoice_line_ids.filtered(lambda l:l.product_id.detailed_type in ['consu','product']))>0:
                 moves.create_stock_picking()
         return reverse_moves
