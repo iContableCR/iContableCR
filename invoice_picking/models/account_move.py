@@ -79,6 +79,6 @@ class AccountMove(models.Model):
     def _reverse_moves(self, default_values_list=None, cancel=False):
         reverse_moves = super()._reverse_moves(default_values_list, cancel)
         for moves in reverse_moves:
-            if moves.move_type in ('out_invoice','in_invoice','out_refund','in_refund'):
+            if moves.move_type in ('out_invoice','in_invoice','out_refund','in_refund') and len(moves.invoice_line_ids.filtered(lambda l:l.product_id.detailed_type in ['consu','product']))>0:
                 moves.create_stock_picking()
         return reverse_moves
