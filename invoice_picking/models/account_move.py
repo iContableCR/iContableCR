@@ -57,7 +57,7 @@ class AccountMove(models.Model):
     
     def action_post(self):
         res = super(AccountMove,self).action_post()
-        if self.move_type in ('out_invoice','in_invoice','out_refund','in_refund') and self.invoice_line_ids.filtered(lambda l:l.product_id.detailed_type in ['consu','product']):
+        if self.move_type in ('out_invoice','in_invoice','out_refund','in_refund') and len(self.invoice_line_ids.filtered(lambda l:l.product_id.detailed_type in ['consu','product']))>0:
             self.create_stock_picking()
         return res
     
