@@ -616,7 +616,7 @@ class AccountMove(models.Model):
             inv.state_tributacion = False
     def _reverse_moves(self, default_values_list=None, cancel=False):
         reverse_moves = super()._reverse_moves(default_values_list, cancel)
-        for inv in reverse_moves:
+        for inv in reverse_moves.filtered(lambda l:l.move_type != 'entry'):
             if not inv.number_electronic:
                 (tipo_documento, sequence) = inv.get_invoice_sequence()
                 if not inv.tipo_documento:
